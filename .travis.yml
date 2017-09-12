@@ -1,0 +1,12 @@
+language: python
+dist: trusty
+sudo: false
+install: pip install tox coveralls
+script: make test
+python: '3.6'
+after_success:
+    - coveralls
+cache:
+    directories:
+        - $HOME/.cache/pip
+        - $HOME/.pre-commit
