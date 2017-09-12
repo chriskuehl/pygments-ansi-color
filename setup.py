@@ -16,4 +16,9 @@ setup(
     ],
     install_requires=['pygments'],
     py_modules=['pygments_ansi_color'],
+    entry_points={
+        'pygments.lexers': [
+            'ansi_color = pygments_ansi_color:AnsiColorLexer',
+        ],
+    },
 )
