@@ -1,4 +1,6 @@
 *.py[co]
+/build
+/dist
 /.cache
 /.coverage
 /.tox
