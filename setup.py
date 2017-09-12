@@ -9,6 +9,7 @@ setup(
     name='pygments-ansi-color',
     version='0.0.0',
     classifiers=[
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
