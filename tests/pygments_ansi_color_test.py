@@ -74,6 +74,11 @@ def test_simple_colors():
     )
 
 
+def test_highlight_empty_end_specifier():
+    ret = _highlight('plain\x1b[31mred\x1b[mplain\n')
+    assert ret == ((Text, 'plain'), (Color.Red, 'red'), (Text, 'plain\n'))
+
+
 def test_ignores_unrecognized_ansi_color_codes():
     """It should just strip and ignore any unrecognized color ANSI codes."""
     assert _highlight(
