@@ -149,30 +149,35 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
             value, code, text = parsed.groups()
 
             if code == 'm':  # "m" is "Set Graphics Mode"
-                values = value.split(';')
-                for value in values:
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        # Shouldn't ever happen, but could with invalid ANSI.
-                        continue
-                    else:
-                        fg_color = _ansi_code_to_color.get(value - 30)
-                        bg_color = _ansi_code_to_color.get(value - 40)
-                        if fg_color:
-                            self.fg_color = fg_color
-                        elif bg_color:
-                            self.bg_color = bg_color
-                        elif value == 1:
-                            self.bold = True
-                        elif value == 22:
-                            self.bold = False
-                        elif value == 39:
-                            self.fg_color = None
-                        elif value == 49:
-                            self.bg_color = None
-                        elif value == 0:
-                            self.reset_state()
+                # Special case \x1b[m is a reset code
+                if value == '':
+                    self.reset_state()
+                else:
+                    values = value.split(';')
+                    for value in values:
+                        try:
+                            value = int(value)
+                        except ValueError:
+                            # Shouldn't ever happen, but could with invalid
+                            # ANSI.
+                            continue
+                        else:
+                            fg_color = _ansi_code_to_color.get(value - 30)
+                            bg_color = _ansi_code_to_color.get(value - 40)
+                            if fg_color:
+                                self.fg_color = fg_color
+                            elif bg_color:
+                                self.bg_color = bg_color
+                            elif value == 1:
+                                self.bold = True
+                            elif value == 22:
+                                self.bold = False
+                            elif value == 39:
+                                self.fg_color = None
+                            elif value == 49:
+                                self.bg_color = None
+                            elif value == 0:
+                                self.reset_state()
 
         yield match.start(), self.current_token, text
 
