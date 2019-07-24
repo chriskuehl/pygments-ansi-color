@@ -120,5 +120,5 @@ If you'd like to enable 256-color support, you'll need to do two things:
 Once these two changes have been made, you can use pygments-ansi-color as normal.
 
 
-[fluffy-example]: https://i.fluffy.cc/zr9RVt0gcrVtKH06hkqRCJPP1S91z3Mz.html
+[fluffy-example]: https://i.fluffy.cc/3Gq7Fg86mv3dX30Qx9LHMWcKMqsQLCtd.html
 [256-color]: https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
