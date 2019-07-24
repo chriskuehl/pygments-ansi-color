@@ -2,10 +2,15 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import itertools
+
 import pytest
+from pygments.formatters import HtmlFormatter
 from pygments.token import Text
+from pygments.token import Token
 
 import pygments_ansi_color as main
+from pygments_ansi_color import C
 from pygments_ansi_color import Color
 
 
@@ -14,8 +19,8 @@ from pygments_ansi_color import Color
     (
         (False, False, False, Text),
         (True, False, False, Color.Bold),
-        (True, 'Red', False, Color.BoldRed),
-        (True, 'Red', 'Blue', Color.BoldRedBGBlue),
+        (True, 'Red', False, Color.Bold.Red),
+        (True, 'Red', 'Blue', Color.Bold.Red.BGBlue),
     ),
 )
 def test_token_from_lexer_state(bold, fg_color, bg_color, expected):
@@ -23,21 +28,37 @@ def test_token_from_lexer_state(bold, fg_color, bg_color, expected):
 
 
 def test_color_tokens():
-    fg_colors = {
-        'Red': '#ff0000',
-    }
-    bg_colors = {
-        'Green': '#00ff00',
-    }
+    fg_colors = {'Red': '#ff0000'}
+    bg_colors = {'Green': '#00ff00'}
     assert main.color_tokens(fg_colors, bg_colors) == {
         Color.BGGreen: 'bg:#00ff00',
         Color.Bold: 'bold',
-        Color.BoldBGGreen: 'bold bg:#00ff00',
-        Color.BoldRed: 'bold #ff0000',
-        Color.BoldRedBGGreen: 'bold #ff0000 bg:#00ff00',
+        Color.Bold.BGGreen: 'bold bg:#00ff00',
+        Color.Bold.Red: 'bold #ff0000',
+        Color.Bold.Red.BGGreen: 'bold #ff0000 bg:#00ff00',
         Color.Red: '#ff0000',
-        Color.RedBGGreen: '#ff0000 bg:#00ff00',
+        Color.Red.BGGreen: '#ff0000 bg:#00ff00',
     }
+
+
+def test_color_tokens_256color():
+    fg_colors = {'Red': '#ff0000'}
+    bg_colors = {'Green': '#00ff00'}
+
+    expected = dict(itertools.chain.from_iterable(
+        (
+            (getattr(C, 'C{}'.format(i)), value),
+            (getattr(C, 'BGC{}'.format(i)), 'bg:{}'.format(value)),
+        )
+        for i, value in main._256_colors.items()
+    ))
+    expected.update({
+        C.Red: '#ff0000',
+        C.BGGreen: 'bg:#00ff00',
+        C.Bold: 'bold',
+    })
+    assert main.color_tokens(fg_colors, bg_colors,
+                             enable_256color=True) == expected
 
 
 def _highlight(text):
@@ -64,13 +85,51 @@ def test_simple_colors():
     ) == (
         (Text, 'plain text\n'),
         (Color.Red, 'red text\n'),
-        (Color.BoldGreen, 'bold green text\n'),
+        (Color.Bold.Green, 'bold green text\n'),
         (Color.Bold, 'fg color turned off\n'),
         (Text, 'plain text after reset\n'),
         (Color.Bold, 'bold text\n'),
-        (Color.BoldBGYellow, 'bold from previous line with yellow bg\n'),
+        (Color.Bold.BGYellow, 'bold from previous line with yellow bg\n'),
         (Color.Bold, 'bg color turned off\n'),
         (Text, 'bold turned off\n'),
+    )
+
+
+def test_256_colors():
+    assert _highlight(
+        'plain text\n'
+        '\x1b[38;5;15mcolor 15\n'
+        '\x1b[1mbold color 15\n'
+        '\x1b[48;5;8mbold color 15 with color 8 bg\n'
+        '\x1b[38;5;11;22mnot bold color 11 with color 8 bg\n'
+        '\x1b[0mplain text after reset\n'
+    ) == (
+        (Text, 'plain text\n'),
+        (Color.C15, 'color 15\n'),
+        (Color.Bold.C15, 'bold color 15\n'),
+        (Color.Bold.C15.BGC8, 'bold color 15 with color 8 bg\n'),
+        (Color.C11.BGC8, 'not bold color 11 with color 8 bg\n'),
+        (Text, 'plain text after reset\n'),
+    )
+
+
+def test_256_colors_invalid_escapes():
+    assert _highlight(
+        'plain text\n'
+        # second value is "4" instead of expected "5"
+        '\x1b[38;4;15mA\n'
+        # too few values
+        '\x1b[38;15mB\n'
+        # invalid values (not integers)
+        '\x1b[38;4=;15mC\n'
+        # invalid values (color larger than 255)
+        '\x1b[38;5;937mD\n'
+    ) == (
+        (Text, 'plain text\n'),
+        (Text, 'A\n'),
+        (Text, 'B\n'),
+        (Text, 'C\n'),
+        (Text, 'D\n'),
     )
 
 
@@ -123,3 +182,39 @@ def test_ignores_completely_invalid_escapes():
         (Text, 'plain '),
         (Text, '%text\n'),
     )
+
+
+@pytest.fixture
+def test_formatter():
+    class TestFormatter(main.ExtendedColorHtmlFormatterMixin, HtmlFormatter):
+        pass
+    return TestFormatter()
+
+
+@pytest.mark.parametrize(
+    ('token', 'expected_classes'),
+    (
+        # Standard Pygments tokens shouldn't be changed.
+        (Text, ''),
+        (Token.Comment, 'c'),
+        (Token.Comment.Multi, 'c c-Multi'),
+        (Token.Operator, 'o'),
+
+        # Non-standard (but non-Color) Pygments tokens also shouldn't be changed.
+        (Token.Foo, ' -Foo'),
+        (Token.Foo.Bar.Baz, ' -Foo -Foo-Bar -Foo-Bar-Baz'),
+
+        # Color tokens should be split out into multiple, non-nested classes prefixed with "C".
+        (Token.Color.Bold, ' -Color -Color-Bold -C-Bold'),
+        (Token.Color.Red, ' -Color -Color-Red -C-Red'),
+        (Token.Color.Bold.Red, ' -Color -Color-Bold -Color-Bold-Red -C-Bold -C-Red'),
+        (
+            Token.Color.Bold.Red.BGGreen,
+            ' -Color -Color-Bold -Color-Bold-Red -Color-Bold-Red-BGGreen -C-Bold -C-Red -C-BGGreen',
+        ),
+        (Token.Color.C5, ' -Color -Color-C5 -C-C5'),
+        (Token.Color.C5.BGC18, ' -Color -Color-C5 -Color-C5-BGC18 -C-C5 -C-BGC18'),
+    ),
+)
+def test_formatter_mixin_get_css_classes(test_formatter, token, expected_classes):
+    assert test_formatter._get_css_classes(token) == expected_classes

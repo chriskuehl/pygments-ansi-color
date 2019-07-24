@@ -48,11 +48,11 @@ An ANSI color-code highlighting lexer for Pygments.
 
    ```python
    import pygments
-   import pygments.formatter
+   import pygments.formatters
    import pygments.lexers
 
    lexer = pygments.lexers.get_lexer_by_name('ansi-color')
-   formatter = pygments.formatter.HtmlFormatter(style=MyStyle)
+   formatter = pygments.formatters.HtmlFormatter(style=MyStyle)
    print(pygments.highlight('your text', lexer, formatter))
    ```
 
@@ -65,4 +65,60 @@ was originally developed for.
 The colors are defined as part of your Pygments style and can be changed.
 
 
+### Optional: Enable "256 color" support
+
+This library supports rendering terminal output using [256 color
+(8-bit)][256-color] ANSI color codes. However, because of limitations in
+Pygments tokens, this is an opt-in feature which requires patching the
+formatter you're using.
+
+The reason this requires patching the Pygments formatter is that Pygments does
+not support multiple tokens on a single piece of text, requiring us to
+"compose" a single state (which is a tuple of `(bold enabled, fg color, bg
+color)`) into a single token like `Color.Bold.FGColor.BGColor`. We then need to
+output the styles for this token in the CSS.
+
+In the default mode where we only support the standard 8 colors (plus 1 for no
+color), we need 2 × 9 × 9 - 1 = 161 tokens, which is reasonable to contain in
+one CSS file. With 256 colors (plus the standard 8, plus 1 for no color),
+though, we'd need 2 × 265 × 265 - 1 = 140,449 tokens defined in CSS. This makes
+the CSS too large to be practical.
+
+To make 256-color support realistic, we patch Pygments' HTML formatter so that
+it places a class for each part of the state tuple independently. This means
+you need only 1 + 265 + 265 = 531 CSS classes to support all possibilities.
+
+If you'd like to enable 256-color support, you'll need to do two things:
+
+1. When calling `color_tokens`, pass `enable_256color=True`:
+
+   ```python
+   styles.update(color_tokens(fg_colors, bg_colors, enable_256color=True))
+   ```
+
+   This change is what causes your CSS to have the appropriate classes in it.
+
+2. When constructing your formatter, use the `ExtendedColorHtmlFormatterMixin`
+   mixin, like this:
+
+   ```python
+   from pygments.formatters import HtmlFormatter
+   from pygments_ansi_color import ExtendedColorHtmlFormatterMixin
+
+   ...
+
+   class MyFormatter(ExtendedColorHtmlFormatterMixin, HtmlFormatter):
+       pass
+
+   ...
+
+   formatter = pygments.formatter.HtmlFormatter(style=MyStyle)
+   ```
+
+   This change is what causes the rendered HTML to have the right class names.
+
+Once these two changes have been made, you can use pygments-ansi-color as normal.
+
+
 [fluffy-example]: https://i.fluffy.cc/zr9RVt0gcrVtKH06hkqRCJPP1S91z3Mz.html
+[256-color]: https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
