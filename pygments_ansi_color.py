@@ -285,7 +285,7 @@ _256_colors = {
 }
 
 
-def _token_from_lexer_state(bold, fg_color, bg_color):
+def _token_from_lexer_state(bold, faint, fg_color, bg_color):
     """Construct a token given the current lexer state.
 
     We can only emit one token even though we have a multiple-tuple state.
@@ -295,6 +295,9 @@ def _token_from_lexer_state(bold, fg_color, bg_color):
 
     if bold:
         components += ('Bold',)
+
+    if faint:
+        components += ('Faint',)
 
     if fg_color:
         components += (fg_color,)
@@ -352,6 +355,7 @@ def color_tokens(fg_colors, bg_colors, enable_256color=False):
 
     if enable_256color:
         styles[pygments.token.Token.C.Bold] = 'bold'
+        styles[pygments.token.Token.C.Faint] = ''
         for i, color in _256_colors.items():
             styles[getattr(pygments.token.Token.C, 'C{}'.format(i))] = color
             styles[getattr(pygments.token.Token.C, 'BGC{}'.format(i))] = 'bg:{}'.format(color)
@@ -362,12 +366,13 @@ def color_tokens(fg_colors, bg_colors, enable_256color=False):
         for color, value in bg_colors.items():
             styles[getattr(C, 'BG{}'.format(color))] = 'bg:{}'.format(value)
     else:
-        for bold, fg_color, bg_color in itertools.product(
+        for bold, faint, fg_color, bg_color in itertools.product(
+                (False, True),
                 (False, True),
                 {None} | set(fg_colors),
                 {None} | set(bg_colors),
         ):
-            token = _token_from_lexer_state(bold, fg_color, bg_color)
+            token = _token_from_lexer_state(bold, faint, fg_color, bg_color)
             if token is not pygments.token.Text:
                 value = []
                 if bold:
@@ -392,13 +397,14 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
 
     def reset_state(self):
         self.bold = False
+        self.faint = False
         self.fg_color = None
         self.bg_color = None
 
     @property
     def current_token(self):
         return _token_from_lexer_state(
-            self.bold, self.fg_color, self.bg_color,
+            self.bold, self.faint, self.fg_color, self.bg_color,
         )
 
     def process(self, match):
@@ -451,8 +457,11 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
                             self.bg_color = bg_color
                         elif value == 1:
                             self.bold = True
+                        elif value == 2:
+                            self.faint = True
                         elif value == 22:
                             self.bold = False
+                            self.faint = False
                         elif value == 39:
                             self.fg_color = None
                         elif value == 49:

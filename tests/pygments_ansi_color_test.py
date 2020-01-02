@@ -15,16 +15,18 @@ from pygments_ansi_color import Color
 
 
 @pytest.mark.parametrize(
-    ('bold', 'fg_color', 'bg_color', 'expected'),
+    ('bold', 'faint', 'fg_color', 'bg_color', 'expected'),
     (
-        (False, False, False, Text),
-        (True, False, False, Color.Bold),
-        (True, 'Red', False, Color.Bold.Red),
-        (True, 'Red', 'Blue', Color.Bold.Red.BGBlue),
+        (False, False, False, False, Text),
+        (True, False, False, False, Color.Bold),
+        (True, False, 'Red', False, Color.Bold.Red),
+        (True, False, 'Red', 'Blue', Color.Bold.Red.BGBlue),
+        (True, True, 'Red', 'Blue', Color.Bold.Faint.Red.BGBlue),
     ),
 )
-def test_token_from_lexer_state(bold, fg_color, bg_color, expected):
-    assert main._token_from_lexer_state(bold, fg_color, bg_color) == expected
+def test_token_from_lexer_state(bold, faint, fg_color, bg_color, expected):
+    ret = main._token_from_lexer_state(bold, faint, fg_color, bg_color)
+    assert ret == expected
 
 
 def test_color_tokens():
@@ -36,8 +38,16 @@ def test_color_tokens():
         Color.Bold.BGGreen: 'bold bg:#00ff00',
         Color.Bold.Red: 'bold #ff0000',
         Color.Bold.Red.BGGreen: 'bold #ff0000 bg:#00ff00',
+        Color.Bold.Faint: 'bold',
+        Color.Bold.Faint.BGGreen: 'bold bg:#00ff00',
+        Color.Bold.Faint.Red: 'bold #ff0000',
+        Color.Bold.Faint.Red.BGGreen: 'bold #ff0000 bg:#00ff00',
         Color.Red: '#ff0000',
         Color.Red.BGGreen: '#ff0000 bg:#00ff00',
+        Color.Faint: '',
+        Color.Faint.BGGreen: 'bg:#00ff00',
+        Color.Faint.Red: '#ff0000',
+        Color.Faint.Red.BGGreen: '#ff0000 bg:#00ff00',
     }
 
 
@@ -56,6 +66,7 @@ def test_color_tokens_256color():
         C.Red: '#ff0000',
         C.BGGreen: 'bg:#00ff00',
         C.Bold: 'bold',
+        C.Faint: '',
     })
     assert main.color_tokens(fg_colors, bg_colors,
                              enable_256color=True) == expected
@@ -81,6 +92,7 @@ def test_simple_colors():
         '\x1b[1mbold text\n'
         '\x1b[43mbold from previous line with yellow bg\n'
         '\x1b[49mbg color turned off\n'
+        '\x1b[2mfaint turned on\n'
         '\x1b[22mbold turned off\n'
     ) == (
         (Text, 'plain text\n'),
@@ -91,6 +103,7 @@ def test_simple_colors():
         (Color.Bold, 'bold text\n'),
         (Color.Bold.BGYellow, 'bold from previous line with yellow bg\n'),
         (Color.Bold, 'bg color turned off\n'),
+        (Color.Bold.Faint, 'faint turned on\n'),
         (Text, 'bold turned off\n'),
     )
 
