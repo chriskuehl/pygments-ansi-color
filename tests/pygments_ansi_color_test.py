@@ -151,18 +151,18 @@ def test_highlight_empty_end_specifier():
     assert ret == ((Text, 'plain'), (Color.Red, 'red'), (Text, 'plain\n'))
 
 
-def test_ignores_unrecognized_ansi_color_codes():
+@pytest.mark.parametrize(
+    's',
+    (
+        pytest.param('\x1b[99m' 'plain text\n', id='unknown int code'),
+        pytest.param('\x1b[=m' 'plain text\n', id='invalid non-int code'),
+        pytest.param('\x1b(B' 'plain text\n', id='other unknown vt100 code'),
+        pytest.param('\x1b' 'plain text\n', id='stray ESC'),
+    ),
+)
+def test_ignores_unrecognized_ansi_color_codes(s):
     """It should just strip and ignore any unrecognized color ANSI codes."""
-    assert _highlight(
-        # unknown int code
-        '\x1b[99m' 'plain text\n'
-
-        # invalid non-int code
-        '\x1b[=m' 'plain text\n'
-    ) == (
-        (Text, 'plain text\n'),
-        (Text, 'plain text\n'),
-    )
+    assert _highlight(s) == ((Text, 'plain text\n'),)
 
 
 def test_ignores_valid_ansi_non_color_codes():
