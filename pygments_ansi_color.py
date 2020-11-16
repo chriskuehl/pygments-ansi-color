@@ -256,10 +256,20 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
 
         yield match.start(), self.current_token, text
 
+    def ignore_unknown_escape(self, match):
+        after = match.group(1)
+        # mypy prints these out because it uses curses to determine colors
+        # http://ascii-table.com/ansi-escape-sequences-vt-100.php
+        if re.match(r'\([AB012]', after):
+            yield match.start(), self.current_token, after[2:]
+        else:
+            yield match.start(), self.current_token, after
+
     tokens = {
         # states have to be native strings
         str('root'): [
             (r'\x1b\[([^\x1b]*)', process),
+            (r'\x1b([^\x1b]*)', ignore_unknown_escape),
             (r'[^\x1b]+', pygments.token.Text),
         ],
     }
