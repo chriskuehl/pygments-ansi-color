@@ -15,7 +15,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
-    install_requires=['pygments'],
+    install_requires=['pygments!=2.7.3'],
     py_modules=['pygments_ansi_color'],
     entry_points={
         'pygments.lexers': [
