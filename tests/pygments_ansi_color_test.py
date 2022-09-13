@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import itertools
 
 import pytest
@@ -55,21 +51,25 @@ def test_color_tokens_256color():
     fg_colors = {'Red': '#ff0000'}
     bg_colors = {'Green': '#00ff00'}
 
-    expected = dict(itertools.chain.from_iterable(
-        (
-            (getattr(C, 'C{}'.format(i)), value),
-            (getattr(C, 'BGC{}'.format(i)), 'bg:{}'.format(value)),
-        )
-        for i, value in main._256_colors.items()
-    ))
+    expected = dict(
+        itertools.chain.from_iterable(
+            (
+                (getattr(C, f'C{i}'), value),
+                (getattr(C, f'BGC{i}'), f'bg:{value}'),
+            )
+            for i, value in main._256_colors.items()
+        ),
+    )
     expected.update({
         C.Red: '#ff0000',
         C.BGGreen: 'bg:#00ff00',
         C.Bold: 'bold',
         C.Faint: '',
     })
-    assert main.color_tokens(fg_colors, bg_colors,
-                             enable_256color=True) == expected
+    assert main.color_tokens(
+        fg_colors, bg_colors,
+        enable_256color=True,
+    ) == expected
 
 
 def _highlight(text):
@@ -93,7 +93,7 @@ def test_simple_colors():
         '\x1b[43mbold from previous line with yellow bg\n'
         '\x1b[49mbg color turned off\n'
         '\x1b[2mfaint turned on\n'
-        '\x1b[22mbold turned off\n'
+        '\x1b[22mbold turned off\n',
     ) == (
         (Text, 'plain text\n'),
         (Color.Red, 'red text\n'),
@@ -115,7 +115,7 @@ def test_256_colors():
         '\x1b[1mbold color 15\n'
         '\x1b[48;5;8mbold color 15 with color 8 bg\n'
         '\x1b[38;5;11;22mnot bold color 11 with color 8 bg\n'
-        '\x1b[0mplain text after reset\n'
+        '\x1b[0mplain text after reset\n',
     ) == (
         (Text, 'plain text\n'),
         (Color.C15, 'color 15\n'),
@@ -136,7 +136,7 @@ def test_256_colors_invalid_escapes():
         # invalid values (not integers)
         '\x1b[38;4=;15mC\n'
         # invalid values (color larger than 255)
-        '\x1b[38;5;937mD\n'
+        '\x1b[38;5;937mD\n',
     ) == (
         (Text, 'plain text\n'),
         (Text, 'A\n'),
@@ -174,7 +174,7 @@ def test_ignores_valid_ansi_non_color_codes():
         # restore cursor position
         '\x1b[u' 'plain '
         # move cursor backwards 55 steps
-        '\x1b[55C' 'text\n'
+        '\x1b[55C' 'text\n',
     ) == (
         # Ideally these would be just one token, but our regex isn't smart
         # enough yet.
@@ -190,7 +190,7 @@ def test_ignores_completely_invalid_escapes():
     followed by garbage.
     """
     assert _highlight(
-        'plain \x1b[%text\n'
+        'plain \x1b[%text\n',
     ) == (
         (Text, 'plain '),
         (Text, '%text\n'),

@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
 """Pygments lexer for text containing ANSI color codes."""
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import itertools
 import re
 import typing
@@ -136,14 +132,14 @@ def color_tokens(
         styles[pygments.token.Token.C.Bold] = 'bold'
         styles[pygments.token.Token.C.Faint] = ''
         for i, color in _256_colors.items():
-            styles[getattr(pygments.token.Token.C, 'C{}'.format(i))] = color
-            styles[getattr(pygments.token.Token.C, 'BGC{}'.format(i))] = 'bg:{}'.format(color)
+            styles[getattr(pygments.token.Token.C, f'C{i}')] = color
+            styles[getattr(pygments.token.Token.C, f'BGC{i}')] = f'bg:{color}'
 
         for color, color_value in fg_colors.items():
             styles[getattr(C, color)] = color_value
 
         for color, color_value in bg_colors.items():
-            styles[getattr(C, 'BG{}'.format(color))] = 'bg:{}'.format(color_value)
+            styles[getattr(C, f'BG{color}')] = f'bg:{color_value}'
     else:
         for bold, faint, fg_color, bg_color in itertools.product(
                 (False, True),
@@ -180,7 +176,7 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
         *args: typing.Iterable[typing.Any],
         **kwargs: typing.Dict[typing.Any, typing.Any],
     ) -> None:
-        super(AnsiColorLexer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.reset_state()
 
     def reset_state(self) -> None:
@@ -295,7 +291,7 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
 
     tokens = {
         # states have to be native strings
-        str('root'): [
+        'root': [
             (r'\x1b\[([^\x1b]*)', process),
             (r'\x1b([^\x1b]*)', ignore_unknown_escape),
             (r'[^\x1b]+', pygments.token.Text),
@@ -303,10 +299,10 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
     }
 
 
-class ExtendedColorHtmlFormatterMixin(object):
+class ExtendedColorHtmlFormatterMixin:
 
     def _get_css_classes(self, token: pygments.token._TokenType) -> str:
-        classes = super(ExtendedColorHtmlFormatterMixin, self)._get_css_classes(token)  # type: ignore
+        classes = super()._get_css_classes(token)  # type: ignore
         if token[0] == 'Color':
             classes += ' ' + ' '.join(
                 self._get_css_class(getattr(C, part))  # type: ignore
