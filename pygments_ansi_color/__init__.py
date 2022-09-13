@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import itertools
 import re
+import typing
 
 import pygments.lexer
 import pygments.token
@@ -54,13 +55,18 @@ _256_colors.update({
 })
 
 
-def _token_from_lexer_state(bold, faint, fg_color, bg_color):
+def _token_from_lexer_state(
+    bold: bool,
+    faint: bool,
+    fg_color: typing.Optional[str],
+    bg_color: typing.Optional[str],
+) -> pygments.token._TokenType:
     """Construct a token given the current lexer state.
 
     We can only emit one token even though we have a multiple-tuple state.
     To do work around this, we construct tokens like "Bold.Red".
     """
-    components = ()
+    components: typing.Tuple[str, ...] = ()
 
     if bold:
         components += ('Bold',)
@@ -83,7 +89,11 @@ def _token_from_lexer_state(bold, faint, fg_color, bg_color):
         return token
 
 
-def color_tokens(fg_colors, bg_colors, enable_256color=False):
+def color_tokens(
+    fg_colors: typing.Dict[str, str],
+    bg_colors: typing.Dict[str, str],
+    enable_256color: bool = False,
+) -> typing.Dict[pygments.token._TokenType, str]:
     """Return color tokens for a given set of colors.
 
     Pygments doesn't have a generic "color" token; instead everything is
@@ -120,7 +130,7 @@ def color_tokens(fg_colors, bg_colors, enable_256color=False):
             styles = dict(pygments.styles.SomeStyle.styles)
             styles.update(color_tokens(fg_colors, bg_colors))
     """
-    styles = {}
+    styles: typing.Dict[pygments.token._TokenType, str] = {}
 
     if enable_256color:
         styles[pygments.token.Token.C.Bold] = 'bold'
@@ -129,11 +139,11 @@ def color_tokens(fg_colors, bg_colors, enable_256color=False):
             styles[getattr(pygments.token.Token.C, 'C{}'.format(i))] = color
             styles[getattr(pygments.token.Token.C, 'BGC{}'.format(i))] = 'bg:{}'.format(color)
 
-        for color, value in fg_colors.items():
-            styles[getattr(C, color)] = value
+        for color, color_value in fg_colors.items():
+            styles[getattr(C, color)] = color_value
 
-        for color, value in bg_colors.items():
-            styles[getattr(C, 'BG{}'.format(color))] = 'bg:{}'.format(value)
+        for color, color_value in bg_colors.items():
+            styles[getattr(C, 'BG{}'.format(color))] = 'bg:{}'.format(color_value)
     else:
         for bold, faint, fg_color, bg_color in itertools.product(
                 (False, True),
@@ -143,7 +153,7 @@ def color_tokens(fg_colors, bg_colors, enable_256color=False):
         ):
             token = _token_from_lexer_state(bold, faint, fg_color, bg_color)
             if token is not pygments.token.Text:
-                value = []
+                value: typing.List[str] = []
                 if bold:
                     value.append('bold')
                 if fg_color:
@@ -160,23 +170,39 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
     aliases = ('ansi-color', 'ansi', 'ansi-terminal')
     flags = re.DOTALL | re.MULTILINE
 
-    def __init__(self, *args, **kwargs):
+    bold: bool
+    fant: bool
+    fg_color: typing.Optional[str]
+    bg_color: typing.Optional[str]
+
+    def __init__(
+        self,
+        *args: typing.Iterable[typing.Any],
+        **kwargs: typing.Dict[typing.Any, typing.Any],
+    ) -> None:
         super(AnsiColorLexer, self).__init__(*args, **kwargs)
         self.reset_state()
 
-    def reset_state(self):
+    def reset_state(self) -> None:
         self.bold = False
         self.faint = False
         self.fg_color = None
         self.bg_color = None
 
     @property
-    def current_token(self):
+    def current_token(self) -> pygments.token._TokenType:
         return _token_from_lexer_state(
             self.bold, self.faint, self.fg_color, self.bg_color,
         )
 
-    def process(self, match):
+    def process(
+        self,
+        match: re.Match[str],
+    ) -> typing.Generator[
+        typing.Tuple[int, pygments.token._TokenType, str],
+        None,
+        None,
+    ]:
         """Produce the next token and bit of text.
 
         Interprets the ANSI code (which may be a color code or some other
@@ -246,17 +272,19 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
                             else:
                                 if five != 5:
                                     continue
-                                if not 0 <= color <= 255:
-                                    continue
-                                color = 'C{}'.format(color)
-                                if value == 38:
-                                    self.fg_color = color
-                                else:
-                                    self.bg_color = color
+                                if 0 <= color <= 255:
+                                    if value == 38:
+                                        self.fg_color = f'C{color}'
+                                    else:
+                                        self.bg_color = f'C{color}'
 
         yield match.start(), self.current_token, text
 
-    def ignore_unknown_escape(self, match):
+    def ignore_unknown_escape(self, match: re.Match[str]) -> typing.Generator[
+        typing.Tuple[int, pygments.token._TokenType, str],
+        None,
+        None,
+    ]:
         after = match.group(1)
         # mypy prints these out because it uses curses to determine colors
         # http://ascii-table.com/ansi-escape-sequences-vt-100.php
@@ -277,11 +305,11 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
 
 class ExtendedColorHtmlFormatterMixin(object):
 
-    def _get_css_classes(self, token):
-        classes = super(ExtendedColorHtmlFormatterMixin, self)._get_css_classes(token)
+    def _get_css_classes(self, token: pygments.token._TokenType) -> str:
+        classes = super(ExtendedColorHtmlFormatterMixin, self)._get_css_classes(token)  # type: ignore
         if token[0] == 'Color':
             classes += ' ' + ' '.join(
-                self._get_css_class(getattr(C, part))
+                self._get_css_class(getattr(C, part))  # type: ignore
                 for part in token[1:]
             )
         return classes

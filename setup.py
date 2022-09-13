@@ -10,13 +10,18 @@ setup(
     version='0.0.6',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
+    python_requires='>=3.7',
     install_requires=['pygments!=2.7.3'],
-    py_modules=['pygments_ansi_color'],
+    packages=['pygments_ansi_color'],
+    package_data={
+        'pygments_ansi_color': ['py.typed'],
+    },
     entry_points={
         'pygments.lexers': [
             'ansi_color = pygments_ansi_color:AnsiColorLexer',
