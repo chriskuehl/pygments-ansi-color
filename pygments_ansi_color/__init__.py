@@ -173,11 +173,7 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
     fg_color: str | None
     bg_color: str | None
 
-    def __init__(
-        self,
-        *args: typing.Iterable[typing.Any],
-        **kwargs: dict[typing.Any, typing.Any],
-    ) -> None:
+    def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         super().__init__(*args, **kwargs)
         self.reset_state()
 
