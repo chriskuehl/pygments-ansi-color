@@ -1,4 +1,6 @@
 """Pygments lexer for text containing ANSI color codes."""
+from __future__ import annotations
+
 import itertools
 import re
 import typing
@@ -54,15 +56,15 @@ _256_colors.update({
 def _token_from_lexer_state(
     bold: bool,
     faint: bool,
-    fg_color: typing.Optional[str],
-    bg_color: typing.Optional[str],
+    fg_color: str | None,
+    bg_color: str | None,
 ) -> pygments.token._TokenType:
     """Construct a token given the current lexer state.
 
     We can only emit one token even though we have a multiple-tuple state.
     To do work around this, we construct tokens like "Bold.Red".
     """
-    components: typing.Tuple[str, ...] = ()
+    components: tuple[str, ...] = ()
 
     if bold:
         components += ('Bold',)
@@ -86,10 +88,10 @@ def _token_from_lexer_state(
 
 
 def color_tokens(
-    fg_colors: typing.Dict[str, str],
-    bg_colors: typing.Dict[str, str],
+    fg_colors: dict[str, str],
+    bg_colors: dict[str, str],
     enable_256color: bool = False,
-) -> typing.Dict[pygments.token._TokenType, str]:
+) -> dict[pygments.token._TokenType, str]:
     """Return color tokens for a given set of colors.
 
     Pygments doesn't have a generic "color" token; instead everything is
@@ -126,7 +128,7 @@ def color_tokens(
             styles = dict(pygments.styles.SomeStyle.styles)
             styles.update(color_tokens(fg_colors, bg_colors))
     """
-    styles: typing.Dict[pygments.token._TokenType, str] = {}
+    styles: dict[pygments.token._TokenType, str] = {}
 
     if enable_256color:
         styles[pygments.token.Token.C.Bold] = 'bold'
@@ -149,7 +151,7 @@ def color_tokens(
         ):
             token = _token_from_lexer_state(bold, faint, fg_color, bg_color)
             if token is not pygments.token.Text:
-                value: typing.List[str] = []
+                value: list[str] = []
                 if bold:
                     value.append('bold')
                 if fg_color:
@@ -168,13 +170,13 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
 
     bold: bool
     fant: bool
-    fg_color: typing.Optional[str]
-    bg_color: typing.Optional[str]
+    fg_color: str | None
+    bg_color: str | None
 
     def __init__(
         self,
         *args: typing.Iterable[typing.Any],
-        **kwargs: typing.Dict[typing.Any, typing.Any],
+        **kwargs: dict[typing.Any, typing.Any],
     ) -> None:
         super().__init__(*args, **kwargs)
         self.reset_state()
@@ -195,7 +197,7 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
         self,
         match: re.Match[str],
     ) -> typing.Generator[
-        typing.Tuple[int, pygments.token._TokenType, str],
+        tuple[int, pygments.token._TokenType, str],
         None,
         None,
     ]:
@@ -277,7 +279,7 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
         yield match.start(), self.current_token, text
 
     def ignore_unknown_escape(self, match: re.Match[str]) -> typing.Generator[
-        typing.Tuple[int, pygments.token._TokenType, str],
+        tuple[int, pygments.token._TokenType, str],
         None,
         None,
     ]:
