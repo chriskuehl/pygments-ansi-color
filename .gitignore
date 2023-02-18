@@ -4,3 +4,4 @@
 /.cache
 /.coverage
 /.tox
+pygments_ansi_color.egg-info
