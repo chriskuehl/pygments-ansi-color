@@ -94,6 +94,9 @@ def test_simple_colors():
         '\x1b[1mbold text\n'
         '\x1b[43mbold from previous line with yellow bg\n'
         '\x1b[49mbg color turned off\n'
+        '\x1b[92mfg bright green\n'
+        '\x1b[101mbg bright red\n'
+        '\x1b[39;49mcolors turned off\n'
         '\x1b[2mfaint turned on\n'
         '\x1b[22mbold turned off\n',
     ) == (
@@ -105,6 +108,9 @@ def test_simple_colors():
         (Color.Bold, 'bold text\n'),
         (Color.Bold.BGYellow, 'bold from previous line with yellow bg\n'),
         (Color.Bold, 'bg color turned off\n'),
+        (Color.Bold.BrightGreen, 'fg bright green\n'),
+        (Color.Bold.BCBrightRed, 'bg bright red\n'),
+        (Color.Bold, 'colors turned off\n'),
         (Color.Bold.Faint, 'faint turned on\n'),
         (Text, 'bold turned off\n'),
     )
