@@ -109,7 +109,7 @@ def test_simple_colors():
         (Color.Bold.BGYellow, 'bold from previous line with yellow bg\n'),
         (Color.Bold, 'bg color turned off\n'),
         (Color.Bold.BrightGreen, 'fg bright green\n'),
-        (Color.Bold.BCBrightRed, 'bg bright red\n'),
+        (Color.Bold.BrightGreen.BGBrightRed, 'bg bright red\n'),
         (Color.Bold, 'colors turned off\n'),
         (Color.Bold.Faint, 'faint turned on\n'),
         (Text, 'bold turned off\n'),
