@@ -22,6 +22,14 @@ _ansi_code_to_color = {
     5: 'Magenta',
     6: 'Cyan',
     7: 'White',
+    60: 'BrightBlack',
+    61: 'BrightRed',
+    62: 'BrightGreen',
+    63: 'BrightYellow',
+    64: 'BrightBlue',
+    65: 'BrightMagenta',
+    66: 'BrightCyan',
+    67: 'BrightWhite',
 }
 
 _256_colors = {
@@ -122,7 +130,15 @@ def color_tokens(
             'Blue': '#3465A4',
             'Magenta': '#c509c5',
             'Cyan': '#34E2E2',
-            'White': '#ffffff',
+            'White': '#CFCFCF',
+            'BrightBlack': '#676767',
+            'BrightRed': '#FF6D67',
+            'BrightGreen': '#5FF967',
+            'BrightYellow': '#FEFB67',
+            'BrightBlue': '#6871FF',
+            'BrightMagenta': '#FF76FF',
+            'BrightCyan': '#5FFDFF',
+            'BrightWhite': '#FEFFFF',
         }
         class MyStyle(pygments.styles.SomeStyle):
             styles = dict(pygments.styles.SomeStyle.styles)
