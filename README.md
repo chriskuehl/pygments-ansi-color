@@ -37,7 +37,15 @@ An ANSI color-code highlighting lexer for Pygments.
        'Blue': '#3465A4',
        'Magenta': '#c509c5',
        'Cyan': '#34E2E2',
-       'White': '#ffffff',
+       'White': '#F5F5F5',
+       'BrightBlack': '#676767',
+       'BrightRed': '#FF6D67',
+       'BrightGreen': '#5FF967',
+       'BrightYellow': '#FEFB67',
+       'BrightBlue': '#6871FF',
+       'BrightMagenta': '#FF76FF',
+       'BrightCyan': '#5FFDFF',
+       'BrightWhite': '#FEFFFF',
    }
    class MyStyle(pygments.styles.xcode.XcodeStyle):
        styles = dict(pygments.styles.xcode.XcodeStyle.styles)
