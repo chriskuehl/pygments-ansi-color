@@ -37,7 +37,7 @@ An ANSI color-code highlighting lexer for Pygments.
        'Blue': '#3465A4',
        'Magenta': '#c509c5',
        'Cyan': '#34E2E2',
-       'White': '#CFCFCF',
+       'White': '#F5F5F5',
        'BrightBlack': '#676767',
        'BrightRed': '#FF6D67',
        'BrightGreen': '#5FF967',
