@@ -1,5 +1,5 @@
 pygments-ansi-color
---------
+-------------------
 
 [![Build Status](https://travis-ci.org/chriskuehl/pygments-ansi-color.svg?branch=master)](https://travis-ci.org/chriskuehl/pygments-ansi-color)
 [![Coverage Status](https://coveralls.io/repos/github/chriskuehl/pygments-ansi-color/badge.svg?branch=master)](https://coveralls.io/github/chriskuehl/pygments-ansi-color?branch=master)
@@ -10,49 +10,37 @@ An ANSI color-code highlighting lexer for Pygments.
 ![](https://i.fluffy.cc/nHPkL3gfBtj5Kt4H3RR51T9TJLh6rtv2.png)
 
 
-### Usage
+### Basic usage
 
-1. `pip install pygments-ansi-color`
+1. Install `pygments-ansi-color`:
 
-2. Configure your Pygments style with the appropriate color tokens. It's
-   necessary to add additional tokens because existing Pygments lexers are
-   built around contextual tokens (think "Comment" or "String") rather than
-   actual colors.
+   ```shell-session
+   $ pip install pygments-ansi-color
+   ```
 
-   In the case of ANSI escape sequences, colors have no context beyond the
-   color themselves; we'd always want a "red" rendered as "red", regardless of
-   your particular theme.
+2. `pygments-ansi-color` is not magic (yet?), so you need to [choose an exising
+   Pygments style](https://pygments.org/styles/), which will be used as a base
+   for your own style.
 
-   Here's an example:
+   For example, let's choose `pygments.styles.xcode.XcodeStyle`, which looks
+   great to use. And then we will augment this reference style with
+   `pygments-ansi-color`'s color tokens thank to the `color_tokens` function,
+   to make our final `MyStyle` custom style.
+
+   Here is how the code looks like:
 
    ```python
    from pygments_ansi_color import color_tokens
 
-   # Note: You can use different background colors for improved readability.
-   fg_colors = bg_colors = {
-       'Black': '#000000',
-       'Red': '#EF2929',
-       'Green': '#8AE234',
-       'Yellow': '#FCE94F',
-       'Blue': '#3465A4',
-       'Magenta': '#c509c5',
-       'Cyan': '#34E2E2',
-       'White': '#F5F5F5',
-       'BrightBlack': '#676767',
-       'BrightRed': '#FF6D67',
-       'BrightGreen': '#5FF967',
-       'BrightYellow': '#FEFB67',
-       'BrightBlue': '#6871FF',
-       'BrightMagenta': '#FF76FF',
-       'BrightCyan': '#5FFDFF',
-       'BrightWhite': '#FEFFFF',
-   }
    class MyStyle(pygments.styles.xcode.XcodeStyle):
        styles = dict(pygments.styles.xcode.XcodeStyle.styles)
-       styles.update(color_tokens(fg_colors, bg_colors))
+       styles.update(color_tokens())
    ```
 
-3. Render your code!
+   That's all the custom code you need to integrate with `pygments-ansi-color`.
+
+3. Now you can highlight your content with the dedicated ANSI lexer and your
+   custom style, with the Pygments regular API:
 
    ```python
    import pygments
@@ -64,8 +52,62 @@ An ANSI color-code highlighting lexer for Pygments.
    print(pygments.highlight('your text', lexer, formatter))
    ```
 
+### Design
 
-### Example
+We had to configure above a custom Pygments style with the appropriate color
+tokens. That's because existing Pygments lexers are built around contextual
+tokens (think `Comment` or `Punctuation`) rather than actual colors.
+
+In the case of ANSI escape sequences, colors have no context beyond the color
+themselves; we'd always want a `red` rendered as `red`, regardless of your
+particular theme.
+
+
+### Custom theme
+
+By default, `pygments-ansi-color` maps ANSI codes to its own set of colors.
+They have been carefully crafted for readability, and are [loosely based on the
+color scheme used by iTerm2
+](https://github.com/chriskuehl/pygments-ansi-color/pull/27#discussion_r1113790011).
+
+Default colors are hard-coded by the `pygments_ansi_color.DEFAULT_STYLE`
+constant as such:
+- `Black`: `#000000`
+- `Red`: `#ef2929`
+- `Green`: `#8ae234`
+- `Yellow`: `#fce94f`
+- `Blue`: `#3465a4`
+- `Magenta`: `#c509c5`
+- `Cyan`: `#34e2e2`
+- `White`: `#f5f5f5`
+- `BrightBlack`: `#676767`
+- `BrightRed`: `#ff6d67`
+- `BrightGreen`: `#5ff967`
+- `BrightYellow`: `#fefb67`
+- `BrightBlue`: `#6871ff`
+- `BrightMagenta`: `#ff76ff`
+- `BrightCyan`: `#5ffdff`
+- `BrightWhite`: `#feffff`
+
+Still, you may want to use your own colors, to tweak the rendering to your
+background color, or to match your own theme.
+
+For that you can override each color individually, by passing them as
+arguments to the `color_tokens` function:
+
+```python
+from pygments_ansi_color import color_tokens
+
+class MyStyle(pygments.styles.xcode.XcodeStyle):
+   styles = dict(pygments.styles.xcode.XcodeStyle.styles)
+   styles.update(color_tokens(
+      fg_colors={'Cyan': '#00ffff', 'BrightCyan': '#00ffff'},
+      bg_colors={'BrightWhite': '#000000'},
+   ))
+```
+
+
+### Used by
 
 You can see an example [on fluffy][fluffy-example], the project that this lexer
 was originally developed for.
@@ -101,7 +143,7 @@ If you'd like to enable 256-color support, you'll need to do two things:
 1. When calling `color_tokens`, pass `enable_256color=True`:
 
    ```python
-   styles.update(color_tokens(fg_colors, bg_colors, enable_256color=True))
+   styles.update(color_tokens(enable_256color=True))
    ```
 
    This change is what causes your CSS to have the appropriate classes in it.
