@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='pygments-ansi-color',
-    version='0.2.0',
+    version='0.3.0',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
@@ -13,6 +13,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     python_requires='>=3.7',
     install_requires=['pygments!=2.7.3'],
