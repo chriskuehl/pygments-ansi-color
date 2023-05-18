@@ -24,7 +24,7 @@ An ANSI color-code highlighting lexer for Pygments.
 
    For example, let's choose `pygments.styles.xcode.XcodeStyle`, which looks
    great to use. And then we will augment this reference style with
-   `pygments-ansi-color`'s color tokens thank to the `color_tokens` function,
+   `pygments-ansi-color`'s color tokens thanks to the `color_tokens` function,
    to make our final `MyStyle` custom style.
 
    Here is how the code looks like:
