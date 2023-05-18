@@ -152,12 +152,12 @@ def color_tokens(
     styles: dict[pygments.token._TokenType, str] = {}
 
     # Validates custom color IDs.
-    if not set(fg_colors).issubset(DEFAULT_STYLE):
+    if not set(fg_colors).issubset(DEFAULT_STYLE):  # pragma: no cover (trivial)
         raise ValueError(
             f'Unrecognized {set(fg_colors).difference(DEFAULT_STYLE)}'
             ' foreground color',
         )
-    if not set(bg_colors).issubset(DEFAULT_STYLE):
+    if not set(bg_colors).issubset(DEFAULT_STYLE):  # pragma: no cover (trivial)
         raise ValueError(
             f'Unrecognized {set(bg_colors).difference(DEFAULT_STYLE)}'
             ' background color',
