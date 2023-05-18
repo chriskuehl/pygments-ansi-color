@@ -95,9 +95,29 @@ def _token_from_lexer_state(
         return token
 
 
+DEFAULT_STYLE = {
+    'Black': '#000000',
+    'Red': '#ef2929',
+    'Green': '#8ae234',
+    'Yellow': '#fce94f',
+    'Blue': '#3465a4',
+    'Magenta': '#c509c5',
+    'Cyan': '#34e2e2',
+    'White': '#f5f5f5',
+    'BrightBlack': '#676767',
+    'BrightRed': '#ff6d67',
+    'BrightGreen': '#5ff967',
+    'BrightYellow': '#fefb67',
+    'BrightBlue': '#6871ff',
+    'BrightMagenta': '#ff76ff',
+    'BrightCyan': '#5ffdff',
+    'BrightWhite': '#feffff',
+}
+
+
 def color_tokens(
-    fg_colors: dict[str, str],
-    bg_colors: dict[str, str],
+    fg_colors: dict[str, str] = DEFAULT_STYLE,
+    bg_colors: dict[str, str] = DEFAULT_STYLE,
     enable_256color: bool = False,
 ) -> dict[pygments.token._TokenType, str]:
     """Return color tokens for a given set of colors.
@@ -122,29 +142,30 @@ def color_tokens(
 
     Usage:
 
-        fg_colors = bg_colors = {
-            'Black': '#000000',
-            'Red': '#EF2929',
-            'Green': '#8AE234',
-            'Yellow': '#FCE94F',
-            'Blue': '#3465A4',
-            'Magenta': '#c509c5',
-            'Cyan': '#34E2E2',
-            'White': '#F5F5F5',
-            'BrightBlack': '#676767',
-            'BrightRed': '#FF6D67',
-            'BrightGreen': '#5FF967',
-            'BrightYellow': '#FEFB67',
-            'BrightBlue': '#6871FF',
-            'BrightMagenta': '#FF76FF',
-            'BrightCyan': '#5FFDFF',
-            'BrightWhite': '#FEFFFF',
-        }
-        class MyStyle(pygments.styles.SomeStyle):
-            styles = dict(pygments.styles.SomeStyle.styles)
-            styles.update(color_tokens(fg_colors, bg_colors))
+        .. code-block:: python
+            from pygments_ansi_color import color_tokens
+
+            class MyStyle(pygments.styles.SomeStyle):
+                styles = dict(pygments.styles.SomeStyle.styles)
+                styles.update(color_tokens())
     """
     styles: dict[pygments.token._TokenType, str] = {}
+
+    # Validates custom color IDs.
+    if not set(fg_colors).issubset(DEFAULT_STYLE):  # pragma: no cover (trivial)
+        raise ValueError(
+            f'Unrecognized {set(fg_colors).difference(DEFAULT_STYLE)}'
+            ' foreground color',
+        )
+    if not set(bg_colors).issubset(DEFAULT_STYLE):  # pragma: no cover (trivial)
+        raise ValueError(
+            f'Unrecognized {set(bg_colors).difference(DEFAULT_STYLE)}'
+            ' background color',
+        )
+
+    # Merge the default colors with the user-provided colors.
+    fg_colors = {**DEFAULT_STYLE, **fg_colors}
+    bg_colors = {**DEFAULT_STYLE, **bg_colors}
 
     if enable_256color:
         styles[pygments.token.Token.C.Bold] = 'bold'

@@ -27,10 +27,24 @@ def test_token_from_lexer_state(bold, faint, fg_color, bg_color, expected):
     assert ret == expected
 
 
-def test_color_tokens():
+@pytest.fixture
+def default_color_tokens():
+    return dict(
+        itertools.chain.from_iterable(
+            (
+                (getattr(C, name), value),
+                (getattr(C, f'BG{name}'), f'bg:{value}'),
+            )
+            for name, value in main.DEFAULT_STYLE.items()
+        ),
+    )
+
+
+def test_color_tokens(default_color_tokens):
     fg_colors = {'Red': '#ff0000'}
     bg_colors = {'Green': '#00ff00'}
-    assert main.color_tokens(fg_colors, bg_colors) == {
+    ret = main.color_tokens(fg_colors, bg_colors)
+    for key, value in {
         Color.BGGreen: 'bg:#00ff00',
         Color.Bold: 'bold',
         Color.Bold.BGGreen: 'bold bg:#00ff00',
@@ -46,20 +60,23 @@ def test_color_tokens():
         Color.Faint.BGGreen: 'bg:#00ff00',
         Color.Faint.Red: '#ff0000',
         Color.Faint.Red.BGGreen: '#ff0000 bg:#00ff00',
-    }
+    }.items():
+        assert ret[key] == value
 
 
-def test_color_tokens_256color():
+def test_color_tokens_256color(default_color_tokens):
     fg_colors = {'Red': '#ff0000'}
     bg_colors = {'Green': '#00ff00'}
-
-    expected = dict(
-        itertools.chain.from_iterable(
-            (
-                (getattr(C, f'C{i}'), value),
-                (getattr(C, f'BGC{i}'), f'bg:{value}'),
-            )
-            for i, value in main._256_colors.items()
+    expected = dict(default_color_tokens)
+    expected.update(
+        dict(
+            itertools.chain.from_iterable(
+                (
+                    (getattr(C, f'C{i}'), value),
+                    (getattr(C, f'BGC{i}'), f'bg:{value}'),
+                )
+                for i, value in main._256_colors.items()
+            ),
         ),
     )
     expected.update({
