@@ -72,22 +72,22 @@ color scheme used by iTerm2
 
 Default colors are hard-coded by the `pygments_ansi_color.DEFAULT_STYLE`
 constant as such:
-- `Black`: `#000000`
-- `Red`: `#ef2929`
-- `Green`: `#8ae234`
-- `Yellow`: `#fce94f`
-- `Blue`: `#3465a4`
-- `Magenta`: `#c509c5`
-- `Cyan`: `#34e2e2`
-- `White`: `#f5f5f5`
-- `BrightBlack`: `#676767`
-- `BrightRed`: `#ff6d67`
-- `BrightGreen`: `#5ff967`
-- `BrightYellow`: `#fefb67`
-- `BrightBlue`: `#6871ff`
-- `BrightMagenta`: `#ff76ff`
-- `BrightCyan`: `#5ffdff`
-- `BrightWhite`: `#feffff`
+- ![#000000](https://placehold.co/15/000000/000000) `Black`: `#000000`
+- ![#ef2929](https://placehold.co/15/ef2929/ef2929) `Red`: `#ef2929`
+- ![#8ae234](https://placehold.co/15/8ae234/8ae234) `Green`: `#8ae234`
+- ![#fce94f](https://placehold.co/15/fce94f/fce94f) `Yellow`: `#fce94f`
+- ![#3465a4](https://placehold.co/15/3465a4/3465a4) `Blue`: `#3465a4`
+- ![#c509c5](https://placehold.co/15/c509c5/c509c5) `Magenta`: `#c509c5`
+- ![#34e2e2](https://placehold.co/15/34e2e2/34e2e2) `Cyan`: `#34e2e2`
+- ![#f5f5f5](https://placehold.co/15/f5f5f5/f5f5f5) `White`: `#f5f5f5`
+- ![#676767](https://placehold.co/15/676767/676767) `BrightBlack`: `#676767`
+- ![#ff6d67](https://placehold.co/15/ff6d67/ff6d67) `BrightRed`: `#ff6d67`
+- ![#5ff967](https://placehold.co/15/5ff967/5ff967) `BrightGreen`: `#5ff967`
+- ![#fefb67](https://placehold.co/15/fefb67/fefb67) `BrightYellow`: `#fefb67`
+- ![#6871ff](https://placehold.co/15/6871ff/6871ff) `BrightBlue`: `#6871ff`
+- ![#ff76ff](https://placehold.co/15/ff76ff/ff76ff) `BrightMagenta`: `#ff76ff`
+- ![#5ffdff](https://placehold.co/15/5ffdff/5ffdff) `BrightCyan`: `#5ffdff`
+- ![#feffff](https://placehold.co/15/feffff/feffff) `BrightWhite`: `#feffff`
 
 Still, you may want to use your own colors, to tweak the rendering to your
 background color, or to match your own theme.
