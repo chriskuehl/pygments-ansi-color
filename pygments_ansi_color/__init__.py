@@ -7,6 +7,8 @@ import typing
 
 import pygments.lexer
 import pygments.token
+from pygments.formatter import _lookup_style  # type: ignore[attr-defined]
+from pygments.formatters import HtmlFormatter
 
 
 C = pygments.token.Token.C
@@ -203,6 +205,8 @@ def color_tokens(
 class AnsiColorLexer(pygments.lexer.RegexLexer):
     name = 'ANSI Color'
     aliases = ('ansi-color', 'ansi', 'ansi-terminal')
+    filenames = ['*.ans', '*.ANS', '*.ansi', '*.asc', '*.nfo']
+
     flags = re.DOTALL | re.MULTILINE
 
     bold: bool
@@ -335,12 +339,88 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
 
 
 class ExtendedColorHtmlFormatterMixin:
+    """Mixin extending ``HtmlFormatter`` to generate styles for 256-color mode.
+
+    .. warning:: Deprecated class
+
+        With the addition of the ``AnsiHtmlFormatter`` class in v0.4.0, this
+        mixin has just became an implementation detail. We no longer need it
+        *per-se* as the user only has to interact with ``AnsiHtmlFormatter``
+        to cover all the basic use-cases.
+
+        We keep it around for now for backward compatibility, but you should
+        avoid referencing it directly in your code, it will probably be
+        removed at one point in the future, probably for the v1.0.0 release.
+    """
+
+    enable_256color: bool = False
+    """Status of the ``256-color`` mode."""
 
     def _get_css_classes(self, token: pygments.token._TokenType) -> str:
-        classes = super()._get_css_classes(token)  # type: ignore
-        if token[0] == 'Color':
-            classes += ' ' + ' '.join(
-                self._get_css_class(getattr(C, part))  # type: ignore
-                for part in token[1:]
-            )
+        classes = super()._get_css_classes(token)  # type: ignore[misc]
+        if self.enable_256color:
+            if token[0] == 'Color':
+                classes += (
+                    ' '
+                    + ' '.join(
+                        self._get_css_class(getattr(C, part))  # type: ignore[attr-defined]
+                        for part in token[1:]
+                    )
+                )
         return classes
+
+
+class AnsiHtmlFormatter(ExtendedColorHtmlFormatterMixin, HtmlFormatter):  # type: ignore[type-arg]
+    """Same as standard Pygments' ``HtmlFormatter``, but with ANSI capabilities."""
+
+    name = 'ANSI HTML'
+    aliases = ['ansi-html']
+
+    def __init__(self, **kwargs):  # type: ignore[no-untyped-def]
+        """Intercept the ``style`` argument to augment it with ANSI colors support.
+
+        Creates a new style instance that inherits from the one provided by the user,
+        but updates its ``styles`` attribute with ``color_tokens()`` function to add
+        ANSI colors support.
+
+        Default to the same default style as in Pygments' own ``HtmlFormatter``, which
+        is... ``default``:
+        https://github.com/pygments/pygments/blob/1d83928/pygments/formatter.py#LL89C33-L89C33
+
+        Support the same keywords parameters as the ``color_tokens()`` function, i.e.:
+            - ``fg_colors``
+            - ``bg_colors``
+            - ``enable_256color``
+        """
+        # Save the status of 256-color mode.
+        self.enable_256color = kwargs.setdefault('enable_256color', False)
+
+        # Fetch user-provided style.
+        base_style_id = kwargs.setdefault('style', 'default')
+        base_style = _lookup_style(base_style_id)
+
+        # Augment user style's tokens with the ANSI colors tokens.
+        tokens = dict(base_style.styles)
+        tokens.update(
+            color_tokens(
+                fg_colors=kwargs.setdefault('fg_colors', {}),
+                bg_colors=kwargs.setdefault('bg_colors', {}),
+                enable_256color=self.enable_256color,
+            ),
+        )
+
+        # Instanciate a new style.
+        new_style = pygments.style.StyleMeta(  # type: ignore[attr-defined]
+            # Prefix the style name with ``Ansi`` to avoid name collision with the
+            # original and ease debugging.
+            f'Ansi{base_style.__name__}',
+            # Our custom style inherits from the user's.
+            (base_style,),
+            # Register augmented color tokens in the style.
+            {'styles': tokens},
+        )
+
+        # Replace user's style with our augmented version.
+        kwargs['style'] = new_style
+
+        super().__init__(**kwargs)
