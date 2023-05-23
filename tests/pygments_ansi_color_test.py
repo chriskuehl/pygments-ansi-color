@@ -3,13 +3,27 @@ from __future__ import annotations
 import itertools
 
 import pytest
+from pygments.formatter import _lookup_style  # type: ignore[attr-defined]
+from pygments.formatters import get_formatter_by_name
 from pygments.formatters import HtmlFormatter
+from pygments.lexers import get_lexer_by_name
+from pygments.styles import get_all_styles
 from pygments.token import Text
 from pygments.token import Token
 
 import pygments_ansi_color as main
+from pygments_ansi_color import AnsiColorLexer
+from pygments_ansi_color import AnsiHtmlFormatter
 from pygments_ansi_color import C
 from pygments_ansi_color import Color
+
+
+def test_pygments_integration():
+    ansi_lexer = get_lexer_by_name('ansi-color')
+    assert ansi_lexer.__class__ == AnsiColorLexer
+
+    ansi_formatter = get_formatter_by_name('ansi-html')
+    assert ansi_formatter.__class__ == AnsiHtmlFormatter
 
 
 @pytest.mark.parametrize(
@@ -222,13 +236,22 @@ def test_ignores_completely_invalid_escapes():
     )
 
 
-@pytest.fixture
-def test_formatter():
+def mixin_formatter():
     class TestFormatter(main.ExtendedColorHtmlFormatterMixin, HtmlFormatter):
         pass
-    return TestFormatter()
+
+    formatter = TestFormatter()
+    formatter.enable_256color = True
+    return formatter
 
 
+@pytest.mark.parametrize(
+    'test_formatter',
+    (
+        mixin_formatter(),
+        AnsiHtmlFormatter(enable_256color=True),
+    ),
+)
 @pytest.mark.parametrize(
     ('token', 'expected_classes'),
     (
@@ -254,5 +277,68 @@ def test_formatter():
         (Token.Color.C5.BGC18, ' -Color -Color-C5 -Color-C5-BGC18 -C-C5 -C-BGC18'),
     ),
 )
-def test_formatter_mixin_get_css_classes(test_formatter, token, expected_classes):
+def test_formatter_get_css_classes(test_formatter, token, expected_classes):
     assert test_formatter._get_css_classes(token) == expected_classes
+
+
+@pytest.mark.parametrize('style_id', get_all_styles())
+@pytest.mark.parametrize('enable_256color', (True, False))
+def test_ansi_html_formatter(style_id, enable_256color):
+    # There is not pre-generated ANSI style: all are dynamiccaly generated and
+    # local.
+    assert not style_id.startswith('ansi')
+
+    formatter = AnsiHtmlFormatter(style=style_id, enable_256color=enable_256color)
+
+    base_style = _lookup_style(style_id)
+    assert formatter.style.__name__ == f'Ansi{base_style.__name__}'
+
+    # Check the generated style has been augmented with styling for color tokens.
+    all_tokens = {str(token) for token in formatter.style.styles}
+    # Validate the presence of some typical variations around the blue color.
+    default_colors_subset = {
+        'Token.Color.BGBlue',
+        'Token.Color.BGBrightBlue',
+        'Token.Color.Blue',
+        'Token.Color.Blue.BGBlue',
+        'Token.Color.Blue.BGBrightBlue',
+        'Token.Color.Bold.BGBlue',
+        'Token.Color.Bold.BGBrightBlue',
+        'Token.Color.Bold.Blue',
+        'Token.Color.Bold.Blue.BGBlue',
+        'Token.Color.Bold.Blue.BGBrightBlue',
+        'Token.Color.Bold.BrightBlue',
+        'Token.Color.Bold.BrightBlue.BGBlue',
+        'Token.Color.Bold.BrightBlue.BGBrightBlue',
+        'Token.Color.Bold.Faint.BGBlue',
+        'Token.Color.Bold.Faint.BGBrightBlue',
+        'Token.Color.Bold.Faint.Blue',
+        'Token.Color.Bold.Faint.Blue.BGBlue',
+        'Token.Color.Bold.Faint.Blue.BGBrightBlue',
+        'Token.Color.Bold.Faint.BrightBlue',
+        'Token.Color.Bold.Faint.BrightBlue.BGBlue',
+        'Token.Color.Bold.Faint.BrightBlue.BGBrightBlue',
+        'Token.Color.BrightBlue',
+        'Token.Color.BrightBlue.BGBlue',
+        'Token.Color.BrightBlue.BGBrightBlue',
+        'Token.Color.Faint.BGBlue',
+        'Token.Color.Faint.BGBrightBlue',
+        'Token.Color.Faint.Blue',
+        'Token.Color.Faint.Blue.BGBlue',
+        'Token.Color.Faint.Blue.BGBrightBlue',
+        'Token.Color.Faint.BrightBlue',
+        'Token.Color.Faint.BrightBlue.BGBlue',
+        'Token.Color.Faint.BrightBlue.BGBrightBlue',
+    }
+    enabled_256color_subset = {
+        'Token.C.BGBlue',
+        'Token.C.BGBrightBlue',
+        'Token.C.Blue',
+        'Token.C.BrightBlue',
+    }
+    if enable_256color:
+        assert all_tokens.issuperset(enabled_256color_subset)
+        assert all_tokens.isdisjoint(default_colors_subset)
+    else:
+        assert all_tokens.issuperset(default_colors_subset)
+        assert all_tokens.isdisjoint(enabled_256color_subset)
