@@ -1,8 +1,8 @@
 pygments-ansi-color
 -------------------
 
-[![Build Status](https://travis-ci.org/chriskuehl/pygments-ansi-color.svg?branch=master)](https://travis-ci.org/chriskuehl/pygments-ansi-color)
-[![Coverage Status](https://coveralls.io/repos/github/chriskuehl/pygments-ansi-color/badge.svg?branch=master)](https://coveralls.io/github/chriskuehl/pygments-ansi-color?branch=master)
+[![build status](https://github.com/chriskuehl/pygments-ansi-color/actions/workflows/main.yml/badge.svg)](https://github.com/chriskuehl/pygments-ansi-color/actions/workflows/main.yml)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/chriskuehl/pygments-ansi-color/main.svg)](https://results.pre-commit.ci/latest/github/chriskuehl/pygments-ansi-color/main)
 [![PyPI version](https://badge.fury.io/py/pygments-ansi-color.svg)](https://pypi.python.org/pypi/pygments-ansi-color)
 
 An ANSI color-code highlighting lexer for Pygments.

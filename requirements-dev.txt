@@ -1,5 +1,4 @@
 coverage
 mypy
-pre-commit>=1.0.0
 pytest
 types-pygments
