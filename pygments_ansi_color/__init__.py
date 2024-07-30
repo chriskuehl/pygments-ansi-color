@@ -231,8 +231,6 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
         match: re.Match[str],
     ) -> typing.Generator[
         tuple[int, pygments.token._TokenType, str],
-        None,
-        None,
     ]:
         """Produce the next token and bit of text.
 
@@ -313,8 +311,6 @@ class AnsiColorLexer(pygments.lexer.RegexLexer):
 
     def ignore_unknown_escape(self, match: re.Match[str]) -> typing.Generator[
         tuple[int, pygments.token._TokenType, str],
-        None,
-        None,
     ]:
         after = match.group(1)
         # mypy prints these out because it uses curses to determine colors
