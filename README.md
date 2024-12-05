@@ -18,7 +18,7 @@ An ANSI color-code highlighting lexer for Pygments.
    $ pip install pygments-ansi-color
    ```
 
-2. `pygments-ansi-color` is not magic (yet?), so you need to [choose an exising
+2. `pygments-ansi-color` is not magic (yet?), so you need to [choose an existing
    Pygments style](https://pygments.org/styles/), which will be used as a base
    for your own style.
 
