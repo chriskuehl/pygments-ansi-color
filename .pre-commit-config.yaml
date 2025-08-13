@@ -11,7 +11,7 @@ repos:
     -   id: double-quote-string-fixer
     -   id: name-tests-test
     -   id: check-added-large-files
-    -   id: check-byte-order-marker
+    -   id: fix-byte-order-marker
 -   repo: https://github.com/hhatto/autopep8
     rev: v2.3.2
     hooks:
