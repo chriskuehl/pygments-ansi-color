@@ -10,7 +10,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
     ],
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     install_requires=['pygments!=2.7.3'],
     packages=['pygments_ansi_color'],
     package_data={
