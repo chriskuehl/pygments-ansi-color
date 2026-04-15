@@ -406,7 +406,7 @@ class AnsiHtmlFormatter(ExtendedColorHtmlFormatterMixin, HtmlFormatter):  # type
         )
 
         # Instanciate a new style.
-        new_style = pygments.style.StyleMeta(  # type: ignore[attr-defined]
+        new_style = pygments.style.StyleMeta(
             # Prefix the style name with ``Ansi`` to avoid name collision with the
             # original and ease debugging.
             f'Ansi{base_style.__name__}',
